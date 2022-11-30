@@ -1,0 +1,210 @@
+var map;
+var resolutions;
+
+var changeresolution = function(evt) {
+	setScale(evt.target.get('resolution'));
+};
+
+var moveend = function(evt) {
+	var extent = map.getView().calculateExtent(map.getSize());
+	console.log(extent[0] + ',' + extent[1] + ',' + extent[2] + ',' + extent[3]);
+	console.log(map.getView().getCenter()[0] + ',' + map.getView().getCenter()[1]);
+};
+
+var clickmap = function(evt) {
+	var ext = map.getView().calculateExtent(map.getSize());
+	console.log(ext)
+
+}
+
+var setResolutions = function() {
+	var newresolution = [];
+	var scaletest = [2100000.0, 1500000.0, 1000000.0, 750000.0, 500000.0, 300000.0, 190000.0, 125000.0, 92500.0, 62500.0, 31250.0, 15625.0, 7812.5, 3906.25, 1953.125, 976.5625, 488.28125, 244.140625,
+		122.0703125, 61.03515625, 30.517578125];//,
+	var units = 'm';
+	var dpi = 25.4 / 0.28;
+	var mpu = ol.proj.Units.METERS_PER_UNIT[units];
+
+	for (var i = 0; i < scaletest.length; i++) {
+		resolution = scaletest[i] / (mpu * 39.37 * dpi);
+		newresolution.push(resolution);
+	}
+	resolutions = newresolution;
+};
+
+var setScale = function(resolution) {
+	var units = map.getView().getProjection().getUnits();
+	var dpi = 25.4 / 0.28;
+	var mpu = ol.proj.Units.METERS_PER_UNIT[units];
+	var scale = resolution * mpu * 39.37 * dpi;
+};
+
+function init() {
+
+	// 좌표계 설정
+	initProj();
+	// map레이어 등록
+	getBasemap_Daum();
+	
+	getcapabilities()
+	
+
+	var options = ol.source.WMTS.optionsFromCapabilities(capabilites, {
+    	layer: 'daummap',
+	  	matrixSet: 'EPSG5181_DAUM',
+	   	format: 'image/png',
+	  	projection: new ol.proj.get('EPSG:5181')
+    });
+    console.log(options)
+	var wmtslyr = new ol.layer.Tile({
+    	name : 'daummap', //20220105 add
+		preload: Infinity,
+        opacity: 1,
+		visible : true,
+        source: new ol.source.WMTS(      (options))
+    });
+    console.log(wmtslyr.N.source.tileGrid.b)
+    var resolutions_wmts =  wmtslyr.N.source.tileGrid.b;
+
+	// map 생성
+	map = new ol.Map({
+		interactions: ol.interaction.defaults({
+			altShiftDragRotate: true
+			, onFocusOnly: false
+			, doubleClickZoom: false
+			, keyboard: false 
+			, mouseWheelZoom: true
+			, shiftDragZoom: false
+			, dragPan: true
+			, pinchRotate: true
+			, pinchZoom: true
+		}),
+		controls: ol.control.defaults({
+			//attribution: false
+			attributionOptions: {
+				collapsible: false
+			}
+		}).extend([]),
+		layers: [wmtslyr],
+		// Map 생성할 div id
+		target: 'map',                          
+		pixelRatio: 1,
+		view: new ol.View({
+			resolutions: resolutions_wmts,
+			projection: new ol.proj.get('EPSG:5181'),
+			// 초기 지도 위치 좌표
+			center: [174094.0456430749, 447614.6996967123],
+			// 초기 지도 위치 줌레벨        
+			zoom: 10,                          
+			maxZoom: 18,
+			minZoom: 3,
+			projection: new ol.proj.get('EPSG:5181'),
+			//범위 화면기준 [왼쪽, 아래, 오른쪽, 위]
+			extent: [100000, -100000, 700000, 580000],
+			//흴시에 레졸루션을 따름.
+			constrainResolution: true  
+
+		}),
+		logo: false,
+		
+		
+	});
+
+	map.on('moveend', moveend);
+	map.getView().on('change:resolution', changeresolution);
+
+	map.on('singleclick', clickmap);
+
+
+
+	// 배경지도 레이어 추가
+	//addBaseLayer(map);
+
+	// 배경지도 선택 select
+	//initBaseLayerSelect(map);
+
+}
+var daum_base
+
+var getBasemap_Daum = function() {
+	var projection = new ol.proj.get('EPSG:5181');
+	var resolutions = [2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5, 0.25, 0.125];
+	var origin = [-30000, -60000];
+	var extent = [-30000, -60000, 494288, 988576];
+	var url_base = "http://map[S].daumcdn.net/map_2d/166joy/L[Z]/[Y]/[X].png";
+	//var url_air = "http://map[S].daumcdn.net/map_skyview/L[Z]/[Y]/[X].jpg?v=160114";
+	//var url_hybrid = "http://map[S].daumcdn.net/map_hybrid/166joy/L[Z]/[Y]/[X].png";
+	//var url_roadview = "http://map[S].daumcdn.net/map_roadviewline/4.00/L[Z]/[Y]/[X].png";
+	//var url_district = "http://map[S].daumcdn.net/map_usedistrict/166joy/L[Z]/[Y]/[X].png";
+
+	daum_base = new ol.layer.Tile({
+		id: 'daum_base', //'daum_base',
+		title: 'daum_base', //'daum_base',
+		type: 'base',
+		visible: false,
+		source: new ol.source.XYZ({
+			projection: projection,
+			tileUrlFunction: function(coordinate, pixelRatio, projection) {
+				if (!coordinate) {
+					return "";
+				}
+				var z = 14 - coordinate[0];
+				var x = coordinate[1];
+				var y = coordinate[2];
+				var subdomain = ((z + x) % 4);
+				var url = url_base;
+				url = url.replace('[Z]', z);
+				url = url.replace('[X]', x);
+				url = url.replace('[Y]', y);
+				url = url.replace('[S]', subdomain);
+				return url;
+			},
+			tileGrid: new ol.tilegrid.TileGrid({
+				origin: origin,
+				resolutions: resolutions
+			})
+		})
+	});
+	var basemap_group = new ol.layer.Group({
+		title: '배경지도-다음',
+		type: 'group',
+		combine: true,
+		visible: false,
+		layers: [daum_base/*, daum_air, daum_hybrid, daum_roadview, daum_district*/]
+	});
+	return basemap_group;
+}
+
+var capabilites
+
+function getcapabilities() {
+	$.ajax({
+		type: "GET",
+		dataType: "XML",
+		async: false,
+		url: 'http://localhost:8088/wmts-getcapabilities.txt',
+		//url: 'https://minwon.kmis.co.kr:8443/minwon/map/n/20200625/wmts?REQUEST=GetCapabilities&VERSION=1.0.0&SERVICE=WMTS',
+		// url: 'https://espacek.ekr.or.kr/HaMapProxy/map/' + krcgis2.tk + '/' + krcgis2.ak +'/wmts?REQUEST=GetCapabilities&VERSION=1.0.0&SERVICE=WMTS',
+		success: function(data) {
+			
+			var parser = new ol.format.WMTSCapabilities();
+			capabilites = parser.read(data);
+		
+			console.log(capabilites)
+			
+		}
+	});
+}
+
+function initProj() {
+
+	// google 좌표계
+	proj4.defs('EPSG:3857', '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs');
+
+	// UTM-K 좌표계
+	proj4.defs('EPSG:5179', '+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+
+	// 중부원점(GRS80) [200,000 500,000]
+	proj4.defs('EPSG:5181', '+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=500000 +ellps=GRS80 +units=m +no_defs');
+
+}
