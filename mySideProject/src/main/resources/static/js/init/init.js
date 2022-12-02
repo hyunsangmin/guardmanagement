@@ -1,48 +1,35 @@
 var map;
-var resolutions;
 
-var changeresolution = function(evt) {
-	setScale(evt.target.get('resolution'));
-};
+var vectorSource = new ol.source.Vector();
+var vectorLayer = new ol.layer.Vector({
+    source: vectorSource
+});
 
-var moveend = function(evt) {
-	var extent = map.getView().calculateExtent(map.getSize());
-	console.log(extent[0] + ',' + extent[1] + ',' + extent[2] + ',' + extent[3]);
-	console.log(map.getView().getCenter()[0] + ',' + map.getView().getCenter()[1]);
-};
+var features = new ol.Collection();
+var areaSource = new ol.source.Vector({
+    features: features
+});
 
-var clickmap = function(evt) {
-	//var ext = map.getView().calculateExtent(map.getSize());
-	//console.log(ext)
-	console.log(evt.coordinate[0]+"[0]   " +evt.coordinate[1]+"[1]" );
-	map.getView().setCenter([evt.coordinate[0], evt.coordinate[1]])
-}
-
-
-var setResolutions = function() {
-	var newresolution = [];
-	var scaletest = [2100000.0, 1500000.0, 1000000.0, 750000.0, 500000.0, 300000.0, 190000.0, 125000.0, 92500.0, 62500.0, 31250.0, 15625.0, 7812.5, 3906.25, 1953.125, 976.5625, 488.28125, 244.140625,
-		122.0703125, 61.03515625, 30.517578125];//,
-	var units = 'm';
-	var dpi = 25.4 / 0.28;
-	var mpu = ol.proj.Units.METERS_PER_UNIT[units];
-
-	for (var i = 0; i < scaletest.length; i++) {
-		resolution = scaletest[i] / (mpu * 39.37 * dpi);
-		newresolution.push(resolution);
-	}
-	resolutions = newresolution;
-};
-
-var setScale = function(resolution) {
-	var units = map.getView().getProjection().getUnits();
-	var dpi = 25.4 / 0.28;
-	var mpu = ol.proj.Units.METERS_PER_UNIT[units];
-	var scale = resolution * mpu * 39.37 * dpi;
-};
-
+var areaVectorLayer = new ol.layer.Vector({
+    source: areaSource,
+    style: new ol.style.Style({
+        fill: new ol.style.Fill({
+            color: 'rgba(255, 167, 66, 0.4)'
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#ff7733',
+            width: 2
+        }),
+        image: new ol.style.Circle({
+            radius: 7,
+            fill: new ol.style.Fill({
+                color: '#ff7733'
+            })
+        })
+    })
+});
 function init() {
-
+	
 	// 좌표계 설정
 	initProj();
 
@@ -56,21 +43,24 @@ function init() {
 		id: 'daum_base',
 		visible: true
 	});
+	
 
+	
+	
 	var resolutions_wmts =  daumBaseLayer.N.source.tileGrid.b;
 
 	// map 생성
 	map = new ol.Map({
 		// Map 생성할 div id
 		target: 'map',                          
-		layers: [daumBaseLayer],
+		layers: [daumBaseLayer,vectorLayer,areaVectorLayer],
 		view: new ol.View({
 			resolutions: resolutions_wmts,
 			projection: new ol.proj.get('EPSG:5181'),
 			//범위 화면기준 [왼쪽, 아래, 오른쪽, 위]
 			extent: [100000, -100000, 700000, 580000],
 			// 초기 지도 위치 좌표
-			center: [174094.0456430749, 447614.6996967123],        	
+			center: [173261.25,442092],        	
 			// 초기 지도 위치 줌레벨
 			zoom: 10,    
 			maxZoom: 18,
@@ -100,12 +90,42 @@ function init() {
 
 	map.on('singleclick', clickmap);
 
+	map.getViewport().addEventListener('dblclick', function(evt) {
+		// 기본 Context Menu가 나오지 않게 차단
+		evt.preventDefault();
+		console.log(evt.x)
+		console.log(evt.y)
+		
+		//console.log(map.getEventCoordinate(evt)); //클릭과 같넹..이거 사용하면되긋어..
+		//console.log('5181 add x ' + map.getEventCoordinate(evt)[0] ); //클릭과 같넹..이거 사용하면되긋어..
+		//console.log('5181 add y ' + map.getEventCoordinate(evt)[1] ); //클릭과 같넹..이거 사용하면되긋어..
+		openContextMenu(evt.x, evt.y)
+	})
+	map.getViewport().addEventListener('contextmenu', function(evt) {
+		// 기본 Context Menu가 나오지 않게 차단
+		evt.preventDefault();
+		console.log(evt.x)
+		console.log(evt.y)
+		
+		//console.log(map.getEventCoordinate(evt)); //클릭과 같넹..이거 사용하면되긋어..
+		//console.log('5181 add x ' + map.getEventCoordinate(evt)[0] ); //클릭과 같넹..이거 사용하면되긋어..
+		//console.log('5181 add y ' + map.getEventCoordinate(evt)[1] ); //클릭과 같넹..이거 사용하면되긋어..
+		//openContextMenu(evt.x, evt.y)
+	})
+	
+	
 }
-
-
-
-
-
+function openContextMenu(x, y) {
+    $('.contextMenu').remove();
+    $('body').append('<div class="contextMenu" style=" top: ' + y + 'px; left:' + x + 'px;">' +
+        '<div class="menuItem" onclick="handleContexMenuEvent(\'zoomIn\', \''+ x +'\', \''+ y +'\');"> Zoom In </div>' +
+		'<div class="menuItem" onclick="handleContexMenuEvent(\'zoomOut\', \''+ x +'\', \''+ y +'\');"> Zoom Out </div>' +
+		'<div class="menuItem" onclick="handleContexMenuEvent(\'centerMap\', \''+ x +'\', \''+ y +'\');"> Center Map Here </div>' +
+		'<div class="menuSeparator"> </div>' +
+        '<div class="menuItem" onclick="handleContexMenuEvent(\'addMarker\', \'' + x + '\', \'' + y + '\');"> Add Marker </div>' +
+        '<div class="menuItem" onclick="handleContexMenuEvent(\'addArea\', \'' + x + '\',  \'' + y + '\');"> Add Area </div>' +
+        '</div>');
+}
 
 function addBaseLayer(map) {
 	// ------------------------------

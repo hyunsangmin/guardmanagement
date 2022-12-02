@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.msp.hyun.DAO.MainDAO">
+
+    <select id="selectEventInfo" parameterType="ParamsDTO" resultType="EventInfoDTO">
+    	select 
+    	event_no, 
+    	number_address, 
+    	road_address, 
+    	company_code, 
+    	event_name, 
+    	event_manager_phone, 
+    	event_start_time, 
+    	event_end_time,
+    	ST_AsText(geom) as geom5181 
+    	from event a, 
+    		(
+			select ST_Buffer( 
+				ST_MakePoint( #{x}::double precision,#{y}::double precision ),
+	      		#{buffer}::double precision
+	   			) as buffergeom
+    		) b
+    	where ST_Intersects( a.geom, b.buffergeom )    	
+    </select>
+</mapper>
