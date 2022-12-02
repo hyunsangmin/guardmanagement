@@ -1,0 +1,18 @@
+.contextMenu {
+    cursor: pointer;
+    background-color: #eee;
+    position: absolute;
+    border: solid 1px blue;
+    width: 150px;
+    z-index: 999;
+}
+.contextMenu .menuItem {
+    padding: 5px;
+}
+.contextMenu .menuItem:hover {
+    background-color: #ccc;
+}
+
+.menuSeparator {
+    border-bottom: solid 1px black;	
+}
