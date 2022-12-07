@@ -14,14 +14,40 @@
     	event_manager_phone, 
     	event_start_time, 
     	event_end_time,
+    	(
+    	select array_to_json(array(
+    		select row_to_json(tmp)
+    		from
+    			(
+    			select
+    				employee_id,
+    				(select employee_name from employee c where c.employee_id = d.employee_id),
+					(select phone_number from employee c where c.employee_id = d.employee_id)
+				from bodyguard d where a.event_no = d.event_no
+    			) tmp
+    		))
+    	) as arrbodyguard,
     	ST_AsText(geom) as geom5181 
     	from event a, 
     		(
 			select ST_Buffer( 
-				ST_MakePoint( #{x}::double precision,#{y}::double precision ),
+				ST_SetSRID(ST_MakePoint( #{x}::double precision,#{y}::double precision ),5181),
 	      		#{buffer}::double precision
 	   			) as buffergeom
     		) b
     	where ST_Intersects( a.geom, b.buffergeom )    	
+    </select>
+    
+    <insert id="insEvent" parameterType="EventInfoDTO">
+    	insert into event (event_no, number_address, road_address, company_code, event_name, event_manager_phone, event_start_time, event_end_time, first_date, geom)
+    		values (
+    			(select 'EVN'||to_char(now(), 'YYYYMMDD')||(select lpad((count(*)+1)::varchar,3,'0') 
+                from event
+                where to_char(first_date, 'YYYYMMDD') = to_char(now(), 'YYYYMMDD'))),
+    		#{numberAddress}, #{roadAddress}, #{companyCode}, #{eventName}, #{eventManagerPhone}, to_timestamp(#{eventStartTime}, 'yyyy.mm.dd hh24:mi'), to_timestamp(#{eventEndTime}, 'yyyy.mm.dd hh24:mi'), now(), ST_Transform(ST_GeomFromText(#{geom5181},5181),5181) )
+    </insert>
+    
+    <select id="selectBodyguards" parameterType="EventInfoDTO" resultType="BodyGuardDTO">
+    	select * from employee where company_code = #{companyCode}
     </select>
 </mapper>

@@ -6,6 +6,8 @@ var vectorLayer
 var features
 var areaSource
 
+var dbclick_5181xy;
+
 var areaVectorLayer = new ol.layer.Vector({
 	source: areaSource,
 	style: new ol.style.Style({
@@ -31,7 +33,8 @@ function init() {
 
 	var daumBaseLayer = new ol.layer.Tile({
 		source: new ol.source.XYZ({
-			projection: new ol.proj.get('EPSG:5181'),
+			//projection: new ol.proj.get('EPSG:5181'),
+			projection: 'EPSG:5181',
 			tileGrid: daumTileGrid,
 			tileUrlFunction: getDaumTileUrlFunction('base'),
 			tilePixelRatio: 2,              // 타일사이즈 512일때 해상도 비율
@@ -145,26 +148,17 @@ function init() {
 		evt.preventDefault();
 		console.log(evt.x)
 		console.log(evt.y)
-
-		//console.log(map.getEventCoordinate(evt)); //클릭과 같넹..이거 사용하면되긋어..
-		//console.log('5181 add x ' + map.getEventCoordinate(evt)[0] ); //클릭과 같넹..이거 사용하면되긋어..
-		//console.log('5181 add y ' + map.getEventCoordinate(evt)[1] ); //클릭과 같넹..이거 사용하면되긋어..
+		dbclick_5181xy = map.getEventCoordinate(evt);
+		console.log(dbclick_5181xy); //클릭과 같넹..이거 사용하면되긋어..		
 		openContextMenu(evt.x, evt.y)
 	})
 	map.getViewport().addEventListener('contextmenu', function(evt) {
 		// 기본 Context Menu가 나오지 않게 차단
 		evt.preventDefault();
-		console.log(evt.x)
-		console.log(evt.y)
-
-		//console.log(map.getEventCoordinate(evt)); //클릭과 같넹..이거 사용하면되긋어..
-		//console.log('5181 add x ' + map.getEventCoordinate(evt)[0] ); //클릭과 같넹..이거 사용하면되긋어..
-		//console.log('5181 add y ' + map.getEventCoordinate(evt)[1] ); //클릭과 같넹..이거 사용하면되긋어..
-		//openContextMenu(evt.x, evt.y)
 	})
 
-
 }
+
 /*
 function openContextMenu(x, y) {
 	$('.contextMenu').remove();
@@ -181,9 +175,11 @@ function openContextMenu(x, y) {
 function openContextMenu(x, y) {
 	$('.contextMenu').remove();
 	$('body').append('<div class="contextMenu" style=" top: ' + y + 'px; left:' + x + 'px;">' +
-		'<div class="menuItem" onclick="handleContexMenuEvent(\'addMarker\', \'' + x + '\', \'' + y + '\');"> 행사장 추가 </div>' +
+		'<div class="menuItem" onclick="addEventPlace()"> 행사장 추가 </div>' +
 		'</div>');
 }
+
+
 function addBaseLayer(map) {
 	// ------------------------------
 	// daum(kakao) layers
@@ -266,5 +262,6 @@ function initProj() {
 
 	// 중부원점(GRS80) [200,000 500,000]
 	proj4.defs('EPSG:5181', '+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=500000 +ellps=GRS80 +units=m +no_defs');
-
+	
+	proj4.defs('EPSG:4326','+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'); //WGS84
 }

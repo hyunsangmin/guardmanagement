@@ -1,5 +1,7 @@
 package com.msp.hyun.DTO;
 
+import java.util.List;
+
 import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Data;
@@ -16,5 +18,10 @@ public class EventInfoDTO {
 	String eventStartTime;
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
 	String eventEndTime;
+	String arrbodyguard;
+	List<String> arrangedBodyguard;
 	String geom5181;
+
 }
+
+

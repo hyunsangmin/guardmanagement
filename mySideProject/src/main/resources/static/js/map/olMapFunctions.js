@@ -16,6 +16,7 @@ var clickmap = function(evt) {
 	//var ext = map.getView().calculateExtent(map.getSize());
 	//console.log(ext)
 	console.log("clickmap")
+	console.log(evt)
 	console.log(evt.coordinate[0]+"[x]   " +evt.coordinate[1]+"[y]" );
 	//map.getView().setCenter([evt.coordinate[0], evt.coordinate[1]])
 	

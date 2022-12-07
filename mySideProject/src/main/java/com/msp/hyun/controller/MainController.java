@@ -5,6 +5,7 @@ package com.msp.hyun.controller;
 
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.msp.hyun.DTO.BodyGuardDTO;
 import com.msp.hyun.DTO.EventInfoDTO;
 import com.msp.hyun.DTO.ParamsDTO;
 import com.msp.hyun.Service.MainService;
@@ -50,21 +52,27 @@ public class MainController {
 		mav.setViewName("home");
 		return mav;
 	}
-	@PostMapping("eventinfopost")
-	public EventInfoDTO getEventInfo(@RequestBody ParamsDTO params) {
-		//public EventInfoDTO getEventInfo(@RequestBody Map<String, String> params) {
-		EventInfoDTO ei = ms.getEventInfo(params);
-		//System.out.println(params);
-		System.out.println(params);
-		System.out.println(ei);
-		return ei;
-	}
 	
 	@GetMapping("eventinfo")
-	public EventInfoDTO getEventInfoget(ParamsDTO params) {
-		System.out.println(params);
-		EventInfoDTO ei = ms.getEventInfo(params);
-		return ei;
+	public EventInfoDTO getEventInfo(ParamsDTO params) {
+		System.out.println(params);		
+		return ms.getEventInfo(params);
 	}
 
+	@PostMapping("eventadding")
+	public Boolean insEvent(@RequestBody EventInfoDTO params) {
+		//public EventInfoDTO getEventInfo(@RequestBody Map<String, String> params) {
+		System.out.println(params);
+		Boolean check = ms.insEvent(params);
+		//System.out.println(params);
+		System.out.println(check);
+		return check;
+	}
+	
+	
+	@GetMapping("bodyguards")
+	public List<BodyGuardDTO> getBodyguards(EventInfoDTO params) {
+		System.out.println(params);		
+		return ms.getBodyguards(params);
+	}
 }
