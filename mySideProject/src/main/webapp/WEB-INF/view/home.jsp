@@ -61,7 +61,7 @@ body {
 
 			<!-- header -->
 			<header id="header">
-				<a class="btn_back" onclick=""><img src="/images/ic_back.svg"
+				<a class="btn_back" onclick="goBack()"><img src="/images/ic_back.svg"
 					alt="이전 아이콘" /></a>
 				<h1 @click="asd()">행사장 관리 dfdf</h1>
 			</header>
@@ -161,8 +161,14 @@ body {
 											</tr>
 											<tr>
 												<th scope="row">경호원</th>
-												<td><input type="text" placeholder="여기를 눌러 입력하십시오"
-													v-model="eventDetailInfo.arrbodyguard" @click="getBodyGuards()" /></td>
+												<td v-if="eventDetailInfo.arrbodyguard.length > 1 "><input type="text" placeholder="여기를 눌러 입력하십시오"
+													v-model="eventDetailInfo.arrbodyguard[0].employee_name +' 포함 '+eventDetailInfo.arrbodyguard.length+'명'" @click="getBodyGuards()" /></td>
+												<td v-if="eventDetailInfo.arrbodyguard.length == 1 "><input type="text" placeholder="여기를 눌러 입력하십시오"
+													v-model="eventDetailInfo.arrbodyguard[0].employee_name" @click="getBodyGuards()" /></td>
+												<td v-else-if="eventDetailInfo.arrbodyguard.length == 0"><input type="text" placeholder="여기를 눌러 입력하십시오"
+													 @click="getBodyGuards()" /></td>
+												
+												
 											</tr>
 											<!-- 배치신고서 사진 -->
 										</tbody>
@@ -223,11 +229,6 @@ body {
 												<th scope="row">담당자 번호</th>
 												<td><input type="text" placeholder="여기를 눌러 입력하십시오"
 													v-model="eventAddingInfo.event_manager_phone" /></td>
-											</tr>
-											<tr>
-												<th scope="row">경호원</th>
-												<td><input type="text" placeholder="여기를 눌러 입력하십시오"
-													v-model="eventAddingInfo.event_manager_phone" @click="getBodyGuards()"/></td>
 											</tr>
 											<!-- 배치신고서 사진 -->
 										</tbody>

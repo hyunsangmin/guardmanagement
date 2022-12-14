@@ -15,6 +15,8 @@ public interface MainService {
 
 	public List<BodyGuardDTO> getBodyguards(EventInfoDTO params);
 
+	public Boolean insEventBodyguard(EventInfoDTO params);
+
 	
 
 

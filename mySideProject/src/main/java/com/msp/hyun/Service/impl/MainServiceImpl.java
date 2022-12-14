@@ -41,6 +41,10 @@ public class MainServiceImpl implements MainService{
 		return bg;
 	}
 	
+	@Override
+	public Boolean insEventBodyguard(EventInfoDTO params) {
+		return convertToBoolean(dao.insEventBodyguard(params)); 
+	}
 	
 	boolean convertToBoolean(int value) {
 		System.out.println("zzzzzzzzzzzzzzzzzzzzzzzzzzz");

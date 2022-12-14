@@ -12,7 +12,8 @@ var VM = new Vue({
 		eventDetailInfo:'',
 		eventAddingInfo:{},
 		bodyguards:'',
-		selectBodyguards:''
+		selectBodyguards:'',
+		backPageName:''
 	},
 	methods: {
 		showEventDetailInfo: function() {
@@ -22,7 +23,7 @@ var VM = new Vue({
 			this.eventDetailInfo = this.eventInfo;
 		},
 		setEvent: function() {
-			/*var data = {
+			var data = {
 				'eventName':this.eventAddingInfo.event_name,
 				'numberAddress':this.eventAddingInfo.number_address,
 				'roadAddress':this.eventAddingInfo.road_address,
@@ -30,8 +31,9 @@ var VM = new Vue({
 				'eventManagerPhone':this.eventAddingInfo.event_manager_phone,
 				'eventStartTime':this.eventAddingInfo.event_start_date+' '+this.eventAddingInfo.event_start_time,
 				'eventEndTime':this.eventAddingInfo.event_end_date+' '+this.eventAddingInfo.event_end_time,
-				'geom5181':dbclick_5181xy[0]+' '+dbclick_5181xy[1]
-			}*/
+				'geom5181':'POINT (' + dbclick_5181xy[0] + ' ' + dbclick_5181xy[1] + ' )'
+			}
+			/*
 			var data = {
 				'eventName':"크리스마스휴가",
 				'numberAddress':"인천 부평구 십정동 289-8",
@@ -40,43 +42,72 @@ var VM = new Vue({
 				'eventManagerPhone':"010-9870-9661",
 				'eventStartTime':"2022-12-23 18:00",
 				'eventEndTime':"2022-12-27 18:00",
-				'geom5181':'POINT (' + dbclick_5181xy[0] + ' ' + dbclick_5181xy[1] + ' )'
-				//'geom5181':"173308 441972",				
-				//'x':'173308',
-				//'y':'441972'
-				//'location':dbclick_5181xy				
-			}
+				'geom5181':'POINT (' + dbclick_5181xy[0] + ' ' + dbclick_5181xy[1] + ' )'		
+			}*/
 			sendPostAjax('eventadding', 'receiveEventAdding', data);
 			console.log(this.eventAddingInfo)
 		},
 		getBodyGuards: function () {
+			let arr = [];
+			console.log(this.eventDetailInfo.arrbodyguard)
+			if (this.eventDetailInfo.arrbodyguard != '') {
+				this.eventDetailInfo.arrbodyguard.forEach((item) => {
+					console.log(item.employee_id)
+					arr.push(item.employee_id)
+				})
+			}
+			console.log(arr)
 			
 			var data = {
 				'companyCode':"CPN001",
 			
-				'arrangedBodyguard': ["EMP001","EMP002"]
+				'arrangedBodyguard': arr
+				//'arrangedBodyguard': ['EMP001','EMP002']
+				
 			}
 			sendGetAjax('bodyguards', 'receiveBodyguards', data);
 		},
 		setBodyguards: function() {
 			let arr = [];
-			$("input:checkbox[name=chkbx_iem_code]").each(function(i,ival) {
-				if ($(this).is(":checked") == true) {
-					arr.push(ival);
+			$("input:checkbox[name=chkbx_iem_code]").each(function() {
+				if ($(this).is(":checked") == true) {					
+					arr.push($(this).val());
 				}
 			})
+			
+			var data = {
+				'eventNo':VM.eventDetailInfo.eventNo,
+				'arrangedBodyguard':arr
+			}
 			console.log(arr)
+			console.log(data)
+			sendPostAjax('eventBodyguardAdding', 'receiveBodyguardAdding', data);
+			
 		}
 	}
 })
 
 
+function receiveBodyguardAdding (data) {
+	alert(data);
+}
+
 function receiveBodyguards (data) {
 	console.log(data)
-	VM.bodyguards = data;
-	VM.page.eventAddingPage = false;
-	VM.page.eventDetailInfoPage = false;
 	
+	if (data.length == 0) {
+		alert('이미 모든인원이 배치되어있습니다')
+		return;
+	}
+	
+	VM.bodyguards = data;
+	if (VM.page.eventAddingPage) {
+		VM.page.eventAddingPage = false;
+		VM.backPageName = 'Adding';
+	} else {
+		VM.page.eventDetailInfoPage = false;
+		VM.backPageName = 'Detail';
+	}
 	VM.page.bodyguardPage = true;
 }
 
@@ -130,7 +161,14 @@ function systemInfo() {
 
 
 function goBack() {
-	if (VM.page.eventDetailInfoPage) {
+	if (VM.page.bodyguardPage) {
+		VM.page.bodyguardPage = false;
+		if (VM.backPageName == 'Adding') {
+			VM.page.eventAddingPage = true;
+		} else {
+			VM.page.eventDetailInfoPage = true;
+		}
+	}else if (VM.page.eventDetailInfoPage) {
 		changeVisibility();
 		VM.page.eventDetailInfoPage = false
 	} else if (VM.page.eventAddingPage) {

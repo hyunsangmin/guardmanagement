@@ -49,5 +49,20 @@
     
     <select id="selectBodyguards" parameterType="EventInfoDTO" resultType="BodyGuardDTO">
     	select * from employee where company_code = #{companyCode}
+    	<if test="arrangedBodyguard != null and arrangedBodyguard != ''">
+    		 and employee_id not in 
+    		<foreach collection='arrangedBodyguard' index='index' item='item' open='(' close=')' separator=','>
+    			#{item}
+    		</foreach>
+    	</if>
     </select>
+    
+    <insert id ="insEventBodyguard" parameterType="EventInfoDTO">
+    	insert into bodyguard (event_no, employee_id)
+    		values
+    		<foreach collection='arrangedBodyguard' item='item' separator=','>
+    			(#{eventNo}, #{item})    		
+    		</foreach>
+    </insert>
+    
 </mapper>

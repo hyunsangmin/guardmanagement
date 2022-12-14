@@ -22,4 +22,6 @@ public interface MainDAO {
 	int insEvent(EventInfoDTO params);
 
 	List<BodyGuardDTO> selectBodyguards(EventInfoDTO params);
+
+	int insEventBodyguard(EventInfoDTO params);
 }

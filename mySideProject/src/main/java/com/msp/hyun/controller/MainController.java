@@ -61,18 +61,24 @@ public class MainController {
 
 	@PostMapping("eventadding")
 	public Boolean insEvent(@RequestBody EventInfoDTO params) {
-		//public EventInfoDTO getEventInfo(@RequestBody Map<String, String> params) {
 		System.out.println(params);
 		Boolean check = ms.insEvent(params);
 		//System.out.println(params);
 		System.out.println(check);
 		return check;
 	}
-	
-	
+		
 	@GetMapping("bodyguards")
 	public List<BodyGuardDTO> getBodyguards(EventInfoDTO params) {
 		System.out.println(params);		
 		return ms.getBodyguards(params);
+	}
+	
+	@PostMapping("eventBodyguardAdding")
+	public Boolean insEventBodyguard(@RequestBody EventInfoDTO params) {	
+		System.out.println(params);
+		Boolean check = ms.insEventBodyguard(params);
+		System.out.println(check);
+		return check;
 	}
 }
